@@ -1,0 +1,10 @@
+backup/
+backups/
+logs/
+global/
+apps/
+*.bin
+*.img
+*.apk
+*.zip
+*.xz
