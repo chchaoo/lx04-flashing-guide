@@ -307,7 +307,3 @@ platform-tools\adb shell grep MemAvailable /proc/meminfo
 ```
 
 `MemAvailable` 是清理前后的估算可用内存。这个操作不会清除账号、应用数据或文件。退出单个应用时也可以用系统应用详情页的「强行停止」，它会结束该应用的播放、下载及其他进程，直到再次打开。
-
-实机还验证了音箱端的「后台清理」小工具。它在 KISS 中打开后，通过 Magisk 的超级用户权限执行同一条 `am kill-all`，并显示清理前后的可用内存。首次使用只需在 Magisk 中给这个应用授权，之后在音箱上操作，无需开电脑。某次实测从 479 MiB 增至 499 MiB，实际增量随后台状态变化。
-
-音箱端小工具是实机自制应用，现有 Release 未提供该 APK。使用仓库附带的 Platform-Tools 即可运行上面的 ADB 清理命令。
