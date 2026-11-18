@@ -274,3 +274,40 @@ platform-tools\adb shell wm set-user-rotation free
 ```
 
 实测 B 站手机版的部分竖屏页面仍会在横屏中居中显示，两侧留黑边。屏幕方向和应用布局由不同设置控制，以上命令也不会修改 DPI。
+
+### 7.5 Root 后停用预装更新组件（可选）
+
+如果已经改用 KISS 等第三方桌面，并且不需要原厂自动更新，可以停用下面两个组件。先确认 ADB 已连接到目标音箱，且 `platform-tools\adb shell id` 返回 `uid=0(root)`。
+
+```cmd
+platform-tools\adb shell pm disable-user --user 0 com.google.assistant.display.android.updater
+platform-tools\adb shell pm disable-user --user 0 com.mico.android.ota
+platform-tools\adb shell pm list packages -d
+```
+
+- 上面两个包分别是 Google 助理显示更新器和小米 OTA。实测都显示为 `disabled-user`，小米 OTA 后台进程随之退出。停用后，这两个组件停止自动检查更新。预装 APK 仍在系统分区，能腾出的应用存储空间有限。
+- 原厂主界面 `com.google.android.apps.mediashell` 的停用方法见第 6 步。先确认 KISS 能作为默认桌面打开。
+- `com.google.assistant.core` 是这版系统的设备所有者，直接停用会被拒绝。对静默重启使用第 7.2 节的专用开关。实测保留了 Assistant Core、`com.google.assistant.oemapp` 和其他原厂组件。
+
+需要重新启用这两个更新组件时，在同一个命令提示符执行：
+
+```cmd
+platform-tools\adb shell pm enable --user 0 com.google.assistant.display.android.updater
+platform-tools\adb shell pm enable --user 0 com.mico.android.ota
+```
+
+### 7.6 清理后台与恢复可用内存（可选）
+
+若按最近任务键没有反应，可以用 `platform-tools\adb shell dumpsys activity recents` 检查。实测系统显示 `mRecentsComponent=null`，没有配置最近任务界面。Android 仍会自动管理后台进程。感觉卡顿时，可以手动回收系统判定可结束的后台进程。
+
+```cmd
+platform-tools\adb shell grep MemAvailable /proc/meminfo
+platform-tools\adb shell am kill-all
+platform-tools\adb shell grep MemAvailable /proc/meminfo
+```
+
+`MemAvailable` 是清理前后的估算可用内存。这个操作不会清除账号、应用数据或文件。退出单个应用时也可以用系统应用详情页的「强行停止」，它会结束该应用的播放、下载及其他进程，直到再次打开。
+
+实机还验证了音箱端的「后台清理」小工具。它在 KISS 中打开后，通过 Magisk 的超级用户权限执行同一条 `am kill-all`，并显示清理前后的可用内存。首次使用只需在 Magisk 中给这个应用授权，之后在音箱上操作，无需开电脑。某次实测从 479 MiB 增至 499 MiB，实际增量随后台状态变化。
+
+音箱端小工具是实机自制应用，现有 Release 未提供该 APK。使用仓库附带的 Platform-Tools 即可运行上面的 ADB 清理命令。
