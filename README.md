@@ -254,3 +254,23 @@ platform-tools\adb shell "ls -l $(magisk --path)/.magisk/block/preinit"
 
 3. 在这台设备上验证过的修复是先读取当前 `boot` 的完整备份并核对电脑与设备上的 SHA-256，使用同版本 `magiskboot` 解包当前镜像，在 ramdisk 的 `.backup/.magisk` 中补上 `PREINITDEVICE=cache`，再重新打包。写入前核对分区大小、内核、设备树和 ramdisk 中的其余内容；写入后读回比较一致再重启。只对 `magisk --preinit-device` 确实返回 `cache`、镜像与分区都已核对的设备使用此配置。保留当前设备的备份，并备好 USB 恢复方式。
 4. 实测重启后无线 ADB 恢复，`preinit` 块设备存在，Magisk 首页显示已安装 26.1，且不再弹出额外设置提示。普通应用能否取得 Magisk root 仍需单独测试。本节是对已刷设备的修复记录，Release 中的原始镜像仍需按上述检查判断是否需要处理。
+
+### 7.4 强制横屏与恢复自动旋转（可选）
+
+音箱横放时，可将整台设备锁定在默认横向（旋转值 `0`）。这会让系统忽略应用请求的屏幕方向，对 B 站、Spotify 和其他应用都生效。两组命令都在 `D:\lx04` 的命令提示符中执行。
+
+启用强制横屏：
+
+```cmd
+platform-tools\adb shell wm set-user-rotation lock 0
+platform-tools\adb shell wm set-fix-to-user-rotation enabled
+```
+
+取消强制横屏并恢复自动旋转：
+
+```cmd
+platform-tools\adb shell wm set-fix-to-user-rotation disabled
+platform-tools\adb shell wm set-user-rotation free
+```
+
+实测 B 站手机版的部分竖屏页面仍会在横屏中居中显示，两侧留黑边。屏幕方向和应用布局由不同设置控制，以上命令也不会修改 DPI。
